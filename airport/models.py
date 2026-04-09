@@ -61,3 +61,14 @@ class Flight(models.Model):
     def __str__(self) -> str:
         return f"{self.route}. {self.airplane}. Departure: {self.departure_time}. Arrival: {self.arrival_time}"
 
+
+class Order(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders")
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return str(self.created_at)
+
