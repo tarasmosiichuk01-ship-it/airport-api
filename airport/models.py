@@ -35,6 +35,11 @@ class Route(models.Model):
     destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="arrivals")
     distance = models.IntegerField()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["source", "destination"]),
+        ]
+
     def __str__(self) -> str:
         return f"{self.source} - {self.destination} (distance: {self.distance} km)"
 
@@ -60,6 +65,11 @@ class Flight(models.Model):
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["departure_time"]),
+        ]
+
     def __str__(self) -> str:
         return f"{self.route.source} - {self.route.destination} (departure: {self.departure_time} / arrival: {self.arrival_time})"
 
@@ -70,6 +80,9 @@ class Order(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["created_at"]),
+        ]
 
     def __str__(self):
         return str(self.created_at)
@@ -105,7 +118,7 @@ class Ticket(models.Model):
             })
 
     def clean(self):
-        if self.flight.airplane:
+        if self.flight and self.flight.airplane:
             Ticket.validate_seat(self.seat, self.flight.airplane.seats_in_row, ValidationError)
             Ticket.validate_row(self.row, self.flight.airplane.rows, ValidationError)
 
