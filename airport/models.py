@@ -36,6 +36,7 @@ class Route(models.Model):
     distance = models.IntegerField()
 
     class Meta:
+        verbose_name_plural = "routes"
         indexes = [
             models.Index(fields=["source", "destination"]),
         ]
@@ -49,6 +50,9 @@ class Airplane(models.Model):
     rows = models.IntegerField()
     seats_in_row = models.IntegerField()
     airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE, related_name="airplanes")
+
+    class Meta:
+        verbose_name_plural = "airplanes"
 
     @property
     def capacity(self) -> int:
