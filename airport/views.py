@@ -39,13 +39,19 @@ class CrewViewSet(viewsets.ModelViewSet):
 
 
 class RouteViewSet(viewsets.ModelViewSet):
-    queryset = Route.objects.all()
+    queryset = Route.objects.select_related()
 
     def get_serializer_class(self):
         if self.action == "list":
             return RouteListSerializer
 
         return RouteSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        if self.action == "list":
+            return queryset.select_related("source", "destination")
+        return queryset
 
 
 class AirplaneViewSet(viewsets.ModelViewSet):
