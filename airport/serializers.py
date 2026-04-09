@@ -54,10 +54,18 @@ class AirplaneSerializer(serializers.ModelSerializer):
 
 
 class FlightSerializer(serializers.ModelSerializer):
+    departure_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
+    arrival_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
 
     class Meta:
         model = Flight
         fields = ("id", "route", "airplane", "crew", "departure_time", "arrival_time")
+
+
+class FlightListSerializer(FlightSerializer):
+    route = RouteSerializer()
+    airplane = AirplaneSerializer()
+    crew = CrewSerializer(many=True)
 
 
 class OrderSerializer(serializers.ModelSerializer):
