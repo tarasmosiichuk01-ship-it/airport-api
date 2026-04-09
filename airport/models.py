@@ -36,7 +36,7 @@ class Route(models.Model):
     distance = models.IntegerField()
 
     def __str__(self) -> str:
-        return f"From: {self.source}. To: {self.destination}. Distance: {self.distance}"
+        return f"{self.source} - {self.destination} (distance: {self.distance} km)"
 
 
 class Airplane(models.Model):
@@ -61,7 +61,7 @@ class Flight(models.Model):
     arrival_time = models.DateTimeField()
 
     def __str__(self) -> str:
-        return f"{self.route}. {self.airplane}. Departure: {self.departure_time}. Arrival: {self.arrival_time}"
+        return f"{self.route.source} - {self.route.destination} (departure: {self.departure_time} / arrival: {self.arrival_time})"
 
 
 class Order(models.Model):
@@ -117,4 +117,9 @@ class Ticket(models.Model):
             update_fields=None,
     ):
         self.full_clean()
-        return super(Ticket, self).save(force_insert, force_update, using, update_fields)
+        return super(Ticket, self).save(
+            force_insert=force_insert,
+            force_update=force_update,
+            using=using,
+            update_fields=update_fields
+        )
