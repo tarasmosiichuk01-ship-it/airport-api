@@ -26,3 +26,12 @@ class Crew(models.Model):
 
     def __str__(self) -> str:
         return self.full_name
+
+
+class Route(models.Model):
+    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="routes")
+    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="routes")
+    distance = models.IntegerField()
+
+    def __str__(self) -> str:
+        return f"From: {self.source}. To: {self.destination}. Distance: {self.distance}"
