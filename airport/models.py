@@ -35,3 +35,17 @@ class Route(models.Model):
 
     def __str__(self) -> str:
         return f"From: {self.source}. To: {self.destination}. Distance: {self.distance}"
+
+
+class AirPlane(models.Model):
+    name = models.CharField(max_length=63, unique=True)
+    rows = models.IntegerField()
+    seats_in_row = models.IntegerField()
+    airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE, related_name="airplanes")
+
+    @property
+    def capacity(self) -> int:
+        return self.rows * self.seats_in_row
+
+    def __str__(self) -> str:
+        return self.name
