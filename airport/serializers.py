@@ -51,7 +51,7 @@ class FlightSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Flight
-        fileds = ("id", "route", "airplane", "crew", "departure_time", "arrival_time")
+        fields = ("id", "route", "airplane", "crew", "departure_time", "arrival_time")
 
 
 class OrderSerializer(serializers.ModelSerializer):
