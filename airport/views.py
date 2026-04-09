@@ -19,7 +19,7 @@ from airport.serializers import (
     AirplaneSerializer,
     FlightSerializer,
     OrderSerializer,
-    TicketSerializer
+    TicketSerializer, RouteListSerializer
 )
 
 
@@ -40,7 +40,12 @@ class CrewViewSet(viewsets.ModelViewSet):
 
 class RouteViewSet(viewsets.ModelViewSet):
     queryset = Route.objects.all()
-    serializer_class = RouteSerializer
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return RouteListSerializer
+
+        return RouteSerializer
 
 
 class AirplaneViewSet(viewsets.ModelViewSet):
