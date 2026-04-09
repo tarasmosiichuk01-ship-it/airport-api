@@ -1,4 +1,6 @@
 from django.db import models
+from django.conf import settings
+from django.core.exceptions import ValidationError
 
 
 class Airport(models.Model):
@@ -29,15 +31,15 @@ class Crew(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="routes")
-    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="routes")
+    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="departures")
+    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="arrivals")
     distance = models.IntegerField()
 
     def __str__(self) -> str:
         return f"From: {self.source}. To: {self.destination}. Distance: {self.distance}"
 
 
-class AirPlane(models.Model):
+class Airplane(models.Model):
     name = models.CharField(max_length=63, unique=True)
     rows = models.IntegerField()
     seats_in_row = models.IntegerField()
@@ -53,10 +55,10 @@ class AirPlane(models.Model):
 
 class Flight(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name="flights")
-    airplane = models.ForeignKey(AirplaneType, on_delete=models.CASCADE, related_name="flights")
+    airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE, related_name="flights")
     crew = models.ManyToManyField(Crew, related_name="flights", blank=True)
-    departure_time = models.DateTimeField(auto_now_add=True)
-    arrival_time = models.DateTimeField(auto_now_add=True)
+    departure_time = models.DateTimeField()
+    arrival_time = models.DateTimeField()
 
     def __str__(self) -> str:
         return f"{self.route}. {self.airplane}. Departure: {self.departure_time}. Arrival: {self.arrival_time}"
@@ -72,3 +74,47 @@ class Order(models.Model):
     def __str__(self):
         return str(self.created_at)
 
+
+class Ticket(models.Model):
+    row = models.IntegerField()
+    seat = models.IntegerField()
+    flight = models.ForeignKey(Flight, on_delete=models.CASCADE, related_name="tickets")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
+
+    class Meta:
+        unique_together = ("row", "seat", "flight")
+        ordering = ["row", "seat"]
+
+    def __str__(self) -> str:
+        return f"{self.flight} (row: {self.row}, seat: {self.seat})"
+
+    @staticmethod
+    def validate_seat(seat: int, num_seats: int, error_to_raise):
+        if not (1 <= seat <= num_seats):
+            raise error_to_raise(
+                {
+                    "seat": f"seat must be in range [1, {num_seats}], not {seat}"
+                }
+            )
+
+    @staticmethod
+    def validate_row(row, num_rows, error_to_raise):
+        if not (1 <= row <= num_rows):
+            raise error_to_raise({
+                "row": f"row must be in range [1, {num_rows}], not {row}"
+            })
+
+    def clean(self):
+        if self.flight.airplane:
+            Ticket.validate_seat(self.seat, self.flight.airplane.seats_in_row, ValidationError)
+            Ticket.validate_row(self.row, self.flight.airplane.rows, ValidationError)
+
+    def save(
+            self,
+            force_insert=False,
+            force_update=False,
+            using=None,
+            update_fields=None,
+    ):
+        self.full_clean()
+        return super(Ticket, self).save(force_insert, force_update, using, update_fields)
