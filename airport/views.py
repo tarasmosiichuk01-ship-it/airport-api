@@ -66,11 +66,27 @@ class RouteViewSet(viewsets.ModelViewSet):
 class AirplaneViewSet(viewsets.ModelViewSet):
     queryset = Airplane.objects.select_related()
 
+    @staticmethod
+    def _params_to_ints(query_string):
+        """Convert a list of string IDs to a list of integers"""
+        return [int(str_id) for str_id in query_string.split(",")]
+
     def get_serializer_class(self):
         if self.action == "list":
             return AirplaneListSerializer
 
         return AirplaneSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+
+        airplane_types = self.request.query_params.get("airplane_types")
+
+        if airplane_types:
+            airplane_types = self._params_to_ints(airplane_types)
+            queryset = queryset.filter(airplane_type__id__in=airplane_types)
+
+        return queryset
 
 
 class FlightViewSet(viewsets.ModelViewSet):
