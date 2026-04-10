@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "airport",
     "user",
+    "rest_framework.authtoken",
 ]
 
 MIDDLEWARE = [
