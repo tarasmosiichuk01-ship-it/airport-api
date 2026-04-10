@@ -92,6 +92,12 @@ class FlightListSerializer(FlightSerializer):
         read_only=True,
         slug_field="full_name",
     )
+    tickets_available = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Flight
+        fields = ("id", "route", "airplane", "crew", "departure_time", "arrival_time", "tickets_available")
+
 
 
 
