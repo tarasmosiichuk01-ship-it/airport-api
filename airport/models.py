@@ -79,7 +79,7 @@ class Flight(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"{self.route.source} - {self.route.destination} (departure: {self.departure_time} / arrival: {self.arrival_time})"
+        return f"Flight {self.id} (departure: {self.departure_time} / arrival: {self.arrival_time})"
 
 
 class Order(models.Model):
@@ -107,7 +107,7 @@ class Ticket(models.Model):
         ordering = ["row", "seat"]
 
     def __str__(self) -> str:
-        return f"{self.flight} (row: {self.row}, seat: {self.seat})"
+        return f"Ticket (row: {self.row}, seat: {self.seat})"
 
     @staticmethod
     def validate_seat(seat: int, num_seats: int, error_to_raise):
