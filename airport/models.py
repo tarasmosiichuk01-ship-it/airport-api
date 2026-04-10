@@ -79,7 +79,7 @@ class Flight(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"Flight {self.id} (departure: {self.departure_time} / arrival: {self.arrival_time})"
+        return f"{self.route.source} - {self.route.destination} (departure: {self.departure_time} / arrival: {self.arrival_time})"
 
 
 class Order(models.Model):
@@ -107,28 +107,32 @@ class Ticket(models.Model):
         ordering = ["row", "seat"]
 
     def __str__(self) -> str:
-        return f"Ticket (row: {self.row}, seat: {self.seat})"
+        return f"{self.flight} (row: {self.row}, seat: {self.seat})"
 
     @staticmethod
-    def validate_seat(seat: int, num_seats: int, error_to_raise):
-        if not (1 <= seat <= num_seats):
-            raise error_to_raise(
-                {
-                    "seat": f"seat must be in range [1, {num_seats}], not {seat}"
-                }
-            )
-
-    @staticmethod
-    def validate_row(row, num_rows, error_to_raise):
-        if not (1 <= row <= num_rows):
-            raise error_to_raise({
-                "row": f"row must be in range [1, {num_rows}], not {row}"
-            })
+    def validate_ticket(row, seat, flight, error_to_raise):
+        for ticket_attr_value, ticket_attr_name, flight_attr_name in [
+            (row, "row", "rows"),
+            (seat, "seat", "seats_in_row"),
+        ]:
+            count_attrs = getattr(flight, flight_attr_name)
+            if not (1 <= ticket_attr_value <= count_attrs):
+                raise error_to_raise(
+                    {
+                        ticket_attr_name: f"{ticket_attr_name} "
+                        f"number must be in available range: "
+                        f"(1, {flight_attr_name}): "
+                        f"(1, {count_attrs})"
+                    }
+                )
 
     def clean(self):
-        if self.flight and self.flight.airplane:
-            Ticket.validate_seat(self.seat, self.flight.airplane.seats_in_row, ValidationError)
-            Ticket.validate_row(self.row, self.flight.airplane.rows, ValidationError)
+        Ticket.validate_ticket(
+            self.row,
+            self.seat,
+            self.flight.airplane,
+            ValidationError,
+        )
 
     def save(
             self,

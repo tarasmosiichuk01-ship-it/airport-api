@@ -1,3 +1,5 @@
+from django.db import transaction
+from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
 
 from airport.models import (
@@ -98,18 +100,48 @@ class FlightRetrieveSerializer(FlightSerializer):
     crew = CrewSerializer(many=True)
 
 
-class OrderSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Order
-        fields = ("id", "created_at", "user")
-
-
 class TicketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ticket
-        fields = ("id", "row", "seat", "flight", "order")
+        fields = ("id", "row", "seat", "flight")
+        validators = []
+
+    def validate(self, attrs):
+        data = super(TicketSerializer, self).validate(attrs=attrs)
+        Ticket.validate_ticket(
+            attrs["row"],
+            attrs["seat"],
+            attrs["flight"].airplane,
+            ValidationError
+        )
+
+        if Ticket.objects.filter(
+                flight=attrs["flight"],
+                row=attrs["row"],
+                seat=attrs["seat"]
+        ).exists():
+            raise serializers.ValidationError(
+                {"seat": f"Seat {attrs['seat']} in row {attrs['row']} is already taken."}
+            )
+
+        return data
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
+
+    class Meta:
+        model = Order
+        fields = ("id", "created_at", "tickets")
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            tickets = validated_data.pop("tickets")
+            order = Order.objects.create(**validated_data)
+            for ticket in tickets:
+                Ticket.objects.create(order=order, **ticket)
+            return order
 
 
 class TicketListSerializer(serializers.ModelSerializer):
@@ -121,6 +153,8 @@ class TicketListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = ("id", "row", "seat", "flight_route", "departure_time", "arrival_time", "order")
+
+
 
 
 class TicketRetrieveSerializer(TicketSerializer):
