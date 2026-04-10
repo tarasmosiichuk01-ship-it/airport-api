@@ -2,6 +2,7 @@ from django.db.models import Count, F
 from rest_framework import viewsets, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 
@@ -30,6 +31,11 @@ from airport.serializers import (
 )
 
 
+class BasePagination(PageNumberPagination):
+    page_size = 3
+    max_page_size = 100
+
+
 class AirportViewSet(viewsets.ModelViewSet):
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
@@ -44,6 +50,7 @@ class AirplaneTypeViewSet(viewsets.ModelViewSet):
 
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
+    pagination_class = BasePagination
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -73,6 +80,7 @@ class RouteViewSet(viewsets.ModelViewSet):
 
 class AirplaneViewSet(viewsets.ModelViewSet):
     queryset = Airplane.objects.select_related()
+    pagination_class = BasePagination
 
     @staticmethod
     def _params_to_ints(query_string):
@@ -117,6 +125,7 @@ class AirplaneViewSet(viewsets.ModelViewSet):
 
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = Flight.objects.all()
+    pagination_class = BasePagination
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -159,6 +168,7 @@ class OrderViewSet(viewsets.ModelViewSet):
 
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
+    pagination_class = BasePagination
 
     def get_serializer_class(self):
         if self.action == "list":
