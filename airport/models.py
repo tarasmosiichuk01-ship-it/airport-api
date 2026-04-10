@@ -42,7 +42,7 @@ class Route(models.Model):
         ]
 
     @property
-    def full_route(self):
+    def full_route(self) -> str:
         return f"{self.source} - {self.destination}"
 
     def __str__(self) -> str:

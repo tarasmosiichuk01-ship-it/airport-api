@@ -33,7 +33,7 @@ class CrewSerializer(serializers.ModelSerializer):
         fields = ("id", "first_name", "last_name", "full_name")
 
 
-class CrewListSerializer(CrewSerializer):
+class CrewListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Crew
@@ -66,6 +66,13 @@ class AirplaneSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "rows", "seats_in_row", "airplane_type", "capacity")
 
 
+class AirplaneListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Airplane
+        fields = ("id", "name")
+
+
 class FlightSerializer(serializers.ModelSerializer):
     departure_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     arrival_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
@@ -88,7 +95,7 @@ class FlightListSerializer(FlightSerializer):
 
 
 class FlightRetrieveSerializer(FlightSerializer):
-    route = RouteListSerializer()
+    route = RouteRetrieveSerializer()
     airplane = AirplaneSerializer()
     crew = CrewSerializer(many=True)
 
