@@ -33,6 +33,14 @@ class CrewSerializer(serializers.ModelSerializer):
         fields = ("id", "first_name", "last_name", "full_name")
 
 
+class CrewListSerializer(CrewSerializer):
+
+    class Meta:
+        model = Crew
+        fields = ("id", "full_name")
+
+
+
 class RouteSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -41,8 +49,13 @@ class RouteSerializer(serializers.ModelSerializer):
 
 
 class RouteListSerializer(RouteSerializer):
-    source = AirportSerializer(read_only=True)
-    destination = AirportSerializer(read_only=True)
+    source = serializers.SlugRelatedField(read_only=True, slug_field="name")
+    destination = serializers.SlugRelatedField(read_only=True, slug_field="name")
+
+
+class RouteRetrieveSerializer(RouteSerializer):
+    source = AirportSerializer()
+    destination = AirportSerializer()
 
 
 class AirplaneSerializer(serializers.ModelSerializer):
@@ -63,9 +76,22 @@ class FlightSerializer(serializers.ModelSerializer):
 
 
 class FlightListSerializer(FlightSerializer):
-    route = RouteSerializer()
+    route = serializers.SlugRelatedField(read_only=True, slug_field="full_route")
+    airplane = serializers.SlugRelatedField(
+        many=False, read_only=True, slug_field="name"
+    )
+    crew = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field="full_name",
+    )
+
+
+class FlightRetrieveSerializer(FlightSerializer):
+    route = RouteListSerializer()
     airplane = AirplaneSerializer()
     crew = CrewSerializer(many=True)
+
 
 
 class OrderSerializer(serializers.ModelSerializer):

@@ -41,8 +41,12 @@ class Route(models.Model):
             models.Index(fields=["source", "destination"]),
         ]
 
+    @property
+    def full_route(self):
+        return f"{self.source} - {self.destination}"
+
     def __str__(self) -> str:
-        return f"{self.source} - {self.destination} (distance: {self.distance} km)"
+        return f"{self.full_route} (distance: {self.distance} km)"
 
 
 class Airplane(models.Model):
