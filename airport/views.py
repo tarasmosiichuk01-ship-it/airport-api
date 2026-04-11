@@ -1,4 +1,6 @@
+from datetime import datetime
 from django.db.models import Count, F
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets, status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import action
@@ -100,10 +102,14 @@ class AirplaneViewSet(viewsets.ModelViewSet):
         queryset = self.queryset
 
         airplane_types = self.request.query_params.get("airplane_types")
+        name = self.request.query_params.get("name")
 
         if airplane_types:
             airplane_types = self._params_to_ints(airplane_types)
             queryset = queryset.filter(airplane_type__id__in=airplane_types)
+
+        if name:
+            queryset = queryset.filter(name__icontains=name)
 
         return queryset
 
@@ -115,6 +121,7 @@ class AirplaneViewSet(viewsets.ModelViewSet):
         url_path="upload-image",
     )
     def upload_image(self, request, pk=None):
+        """Endpoint for uploading image to specific movie"""
         airplane = self.get_object()
         serializer = self.get_serializer(airplane, data=request.data)
         if serializer.is_valid():
@@ -122,6 +129,27 @@ class AirplaneViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "airplane_types",
+                type={"type": "array", "items": {"type": "number"}},
+                description="Filter by airplane type id (ex. ?airplane_types=2,3)",
+                required=False,
+                explode=False,
+            ),
+            OpenApiParameter(
+                "name",
+                type=str,
+                description="Filter by airplane name",
+                required=False,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of airplane."""
+        return super().list(request, *args, **kwargs)
 
 
 class FlightViewSet(viewsets.ModelViewSet):
@@ -167,7 +195,13 @@ class OrderViewSet(viewsets.ModelViewSet):
         return OrderSerializer
 
     def get_queryset(self):
+        date = self.request.query_params.get("date")
+
         queryset = self.queryset.filter(user=self.request.user)
+
+        if date:
+            date = datetime.strptime(date, "%Y-%m-%d").date()
+            queryset = queryset.filter(created_at__date=date)
 
         if self.action == "list":
             return queryset.prefetch_related(
@@ -179,6 +213,21 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "date",
+                type=datetime,
+                description="Filter by date in format: 'year-month-day'",
+                required=False,
+            )
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        """Get list of orders"""
+        return super().list(request, *args, **kwargs)
 
 
 class TicketViewSet(viewsets.ModelViewSet):
