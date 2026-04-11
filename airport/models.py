@@ -62,11 +62,12 @@ class Airplane(models.Model):
     name = models.CharField(max_length=63, unique=True)
     rows = models.IntegerField()
     seats_in_row = models.IntegerField()
-    airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE, related_name="airplanes")
+    airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE, related_name="airplanes", blank=True)
     image = models.ImageField(null=True, upload_to=airplane_image_file_path)
 
     class Meta:
         verbose_name_plural = "airplanes"
+        ordering = ["id"]
 
     @property
     def capacity(self) -> int:

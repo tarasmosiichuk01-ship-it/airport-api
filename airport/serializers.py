@@ -61,7 +61,6 @@ class RouteRetrieveSerializer(RouteSerializer):
 
 
 class AirplaneSerializer(serializers.ModelSerializer):
-    airplane_type = AirplaneTypeSerializer(read_only=True)
 
     class Meta:
         model = Airplane
@@ -80,6 +79,11 @@ class AirplaneListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airplane
         fields = ("id", "name")
+
+
+class AirplaneRetrieveSerializer(AirplaneSerializer):
+    airplane_type = AirplaneTypeSerializer(read_only=True)
+
 
 
 class FlightSerializer(serializers.ModelSerializer):

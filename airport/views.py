@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.db.models import Count, F
 from drf_spectacular.utils import extend_schema, OpenApiParameter
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser
@@ -29,7 +29,7 @@ from airport.serializers import (
     OrderSerializer,
     TicketSerializer, RouteListSerializer, FlightListSerializer, FlightRetrieveSerializer, RouteRetrieveSerializer,
     CrewListSerializer, AirplaneListSerializer, TicketListSerializer, TicketRetrieveSerializer, AirplaneImageSerializer,
-    OrderListSerializer
+    OrderListSerializer, AirplaneRetrieveSerializer
 )
 
 
@@ -41,7 +41,6 @@ class BasePagination(PageNumberPagination):
 class AirportViewSet(viewsets.ModelViewSet):
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class AirplaneTypeViewSet(viewsets.ModelViewSet):
@@ -79,7 +78,13 @@ class RouteViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-class AirplaneViewSet(viewsets.ModelViewSet):
+class AirplaneViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
     queryset = Airplane.objects.select_related()
     pagination_class = BasePagination
 
@@ -91,6 +96,8 @@ class AirplaneViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "list":
             return AirplaneListSerializer
+        elif self.action == "retrieve":
+            return AirplaneRetrieveSerializer
         elif self.action == "upload_image":
             return AirplaneImageSerializer
 
