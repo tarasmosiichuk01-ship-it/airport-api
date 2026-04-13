@@ -15,19 +15,22 @@ class Migration(migrations.Migration):
         migrations.AddIndex(
             model_name="flight",
             index=models.Index(
-                fields=["departure_time"], name="airport_fli_departu_abe547_idx"
+                fields=["departure_time"],
+                name="airport_fli_departu_abe547_idx"
             ),
         ),
         migrations.AddIndex(
             model_name="order",
             index=models.Index(
-                fields=["created_at"], name="airport_ord_created_ff47a7_idx"
+                fields=["created_at"],
+                name="airport_ord_created_ff47a7_idx"
             ),
         ),
         migrations.AddIndex(
             model_name="route",
             index=models.Index(
-                fields=["source", "destination"], name="airport_rou_source__5c8f4c_idx"
+                fields=["source", "destination"],
+                name="airport_rou_source__5c8f4c_idx"
             ),
         ),
     ]

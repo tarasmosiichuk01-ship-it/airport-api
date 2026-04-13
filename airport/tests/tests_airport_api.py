@@ -6,14 +6,28 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
-from airport.models import Airplane, AirplaneType, Airport, Route, Flight, Order, Ticket
-from airport.serializers import AirplaneListSerializer, AirplaneRetrieveSerializer, TicketSerializer
+from airport.models import (
+    Airplane,
+    AirplaneType,
+    Airport,
+    Route,
+    Flight,
+    Order,
+    Ticket
+)
+from airport.serializers import (
+    AirplaneListSerializer,
+    AirplaneRetrieveSerializer,
+    TicketSerializer
+)
 
 AIRPLANE_URL = reverse("airport:airplane-list")
 
 
 def sample_airplane(**params) -> Airplane:
-    airplane_type, _ = AirplaneType.objects.get_or_create(name="Test Airplane Type")
+    airplane_type, _ = AirplaneType.objects.get_or_create(
+        name="Test Airplane Type"
+    )
 
     defaults = {
         "name": f"Test Airplane {Airplane.objects.count() + 1}",
@@ -24,6 +38,7 @@ def sample_airplane(**params) -> Airplane:
     defaults.update(params)
     return Airplane.objects.create(**defaults)
 
+
 def sample_flight():
     airplane_type = AirplaneType.objects.create(name="Test Type")
     airplane = Airplane.objects.create(
@@ -33,7 +48,10 @@ def sample_flight():
         airplane_type=airplane_type
     )
     source = Airport.objects.create(name="Source", closest_big_city="City A")
-    destination = Airport.objects.create(name="Dest", closest_big_city="City B")
+    destination = Airport.objects.create(
+        name="Dest",
+        closest_big_city="City B"
+    )
     route = Route.objects.create(
         source=source, destination=destination, distance=100
     )
@@ -43,6 +61,7 @@ def sample_flight():
         departure_time=timezone.now() + timedelta(days=1),
         arrival_time=timezone.now() + timedelta(days=1, hours=4),
     )
+
 
 def detail_url(airplane_id: int):
     return reverse("airport:airplane-detail", args=[airplane_id])
@@ -96,7 +115,10 @@ class AuthenticatedAirportTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn(serializer_with_type_1.data, response.data["results"])
         self.assertIn(serializer_with_type_2.data, response.data["results"])
-        self.assertNotIn(serializer_without_type.data, response.data["results"])
+        self.assertNotIn(
+            serializer_without_type.data,
+            response.data["results"]
+        )
 
     def test_filter_airplanes_by_name(self):
         airplane_1 = sample_airplane(name="Airbus A350")
@@ -184,7 +206,10 @@ class AdminAirplanesTests(TestCase):
         url = detail_url(airplane.id)
         response = self.client.delete(url)
 
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED
+        )
 
 
 class TicketSerializerTests(TestCase):
@@ -204,7 +229,6 @@ class TicketSerializerTests(TestCase):
 
         self.assertFalse(serializer.is_valid())
         self.assertIn("row", serializer.errors)
-
 
     def test_ticket_duplicate_seat(self):
         user = get_user_model().objects.create_user(

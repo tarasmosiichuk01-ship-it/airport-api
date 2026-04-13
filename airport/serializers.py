@@ -42,7 +42,6 @@ class CrewListSerializer(serializers.ModelSerializer):
         fields = ("id", "full_name")
 
 
-
 class RouteSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -52,7 +51,10 @@ class RouteSerializer(serializers.ModelSerializer):
 
 class RouteListSerializer(RouteSerializer):
     source = serializers.SlugRelatedField(read_only=True, slug_field="name")
-    destination = serializers.SlugRelatedField(read_only=True, slug_field="name")
+    destination = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="name"
+    )
 
 
 class RouteRetrieveSerializer(RouteSerializer):
@@ -64,7 +66,14 @@ class AirplaneSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Airplane
-        fields = ("id", "name", "rows", "seats_in_row", "airplane_type", "capacity")
+        fields = (
+            "id",
+            "name",
+            "rows",
+            "seats_in_row",
+            "airplane_type",
+            "capacity"
+        )
 
 
 class AirplaneImageSerializer(serializers.ModelSerializer):
@@ -85,18 +94,27 @@ class AirplaneRetrieveSerializer(AirplaneSerializer):
     airplane_type = AirplaneTypeSerializer(read_only=True)
 
 
-
 class FlightSerializer(serializers.ModelSerializer):
     departure_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
     arrival_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M")
 
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "crew", "departure_time", "arrival_time")
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "crew",
+            "departure_time",
+            "arrival_time"
+        )
 
 
 class FlightListSerializer(FlightSerializer):
-    route = serializers.SlugRelatedField(read_only=True, slug_field="full_route")
+    route = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="full_route"
+    )
     airplane = serializers.CharField(source="airplane.name", read_only=True)
     crew = serializers.SlugRelatedField(
         many=True,
@@ -107,11 +125,15 @@ class FlightListSerializer(FlightSerializer):
 
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "crew", "departure_time", "arrival_time", "tickets_available")
-
-
-
-
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "crew",
+            "departure_time",
+            "arrival_time",
+            "tickets_available"
+        )
 
 
 class TicketSerializer(serializers.ModelSerializer):
@@ -136,7 +158,10 @@ class TicketSerializer(serializers.ModelSerializer):
                 seat=attrs["seat"]
         ).exists():
             raise serializers.ValidationError(
-                {"seat": f"Seat {attrs['seat']} in row {attrs['row']} is already taken."}
+                {
+                    "seat": f"Seat {attrs['seat']} in row "
+                            f"{attrs['row']} is already taken."
+                }
             )
 
         return data
@@ -160,7 +185,16 @@ class FlightRetrieveSerializer(FlightSerializer):
 
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "crew", "departure_time", "arrival_time", "taken_seats")
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "crew",
+            "departure_time",
+            "arrival_time",
+            "taken_seats"
+        )
+
 
 class OrderSerializer(serializers.ModelSerializer):
     tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
@@ -182,14 +216,25 @@ class OrderSerializer(serializers.ModelSerializer):
 class TicketListSerializer(serializers.ModelSerializer):
 
     flight_route = serializers.CharField(source="flight.route.full_route")
-    departure_time = serializers.DateTimeField(source="flight.departure_time", format="%Y-%m-%d %H:%M")
-    arrival_time = serializers.DateTimeField(source="flight.arrival_time", format="%Y-%m-%d %H:%M")
+    departure_time = serializers.DateTimeField(
+        source="flight.departure_time",
+        format="%Y-%m-%d %H:%M"
+    )
+    arrival_time = serializers.DateTimeField(
+        source="flight.arrival_time",
+        format="%Y-%m-%d %H:%M"
+    )
 
     class Meta:
         model = Ticket
-        fields = ("id", "row", "seat", "flight_route", "departure_time", "arrival_time")
-
-
+        fields = (
+            "id",
+            "row",
+            "seat",
+            "flight_route",
+            "departure_time",
+            "arrival_time"
+        )
 
 
 class TicketRetrieveSerializer(TicketSerializer):

@@ -35,8 +35,16 @@ class Crew(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="departures")
-    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="arrivals")
+    source = models.ForeignKey(
+        Airport,
+        on_delete=models.CASCADE,
+        related_name="departures"
+    )
+    destination = models.ForeignKey(
+        Airport,
+        on_delete=models.CASCADE,
+        related_name="arrivals"
+    )
     distance = models.IntegerField()
 
     class Meta:
@@ -53,8 +61,12 @@ class Route(models.Model):
         return f"{self.full_route} (distance: {self.distance} km)"
 
 
-def airplane_image_file_path(instance: "Airplane", filename: str) -> pathlib.Path:
-    filename = f"{slugify(instance.name)}-{uuid.uuid4()}" + pathlib.Path(filename).suffix
+def airplane_image_file_path(
+        instance: "Airplane",
+        filename: str
+) -> pathlib.Path:
+    filename = (f"{slugify(instance.name)}-{uuid.uuid4()}"
+                + pathlib.Path(filename).suffix)
     return pathlib.Path("upload/airplanes/") / pathlib.Path(filename)
 
 
@@ -62,7 +74,12 @@ class Airplane(models.Model):
     name = models.CharField(max_length=63, unique=True)
     rows = models.IntegerField()
     seats_in_row = models.IntegerField()
-    airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE, related_name="airplanes", blank=True)
+    airplane_type = models.ForeignKey(
+        AirplaneType,
+        on_delete=models.CASCADE,
+        related_name="airplanes",
+        blank=True
+    )
     image = models.ImageField(null=True, upload_to=airplane_image_file_path)
 
     class Meta:
@@ -78,8 +95,16 @@ class Airplane(models.Model):
 
 
 class Flight(models.Model):
-    route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name="flights")
-    airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE, related_name="flights")
+    route = models.ForeignKey(
+        Route,
+        on_delete=models.CASCADE,
+        related_name="flights"
+    )
+    airplane = models.ForeignKey(
+        Airplane,
+        on_delete=models.CASCADE,
+        related_name="flights"
+    )
     crew = models.ManyToManyField(Crew, related_name="flights", blank=True)
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
@@ -90,12 +115,18 @@ class Flight(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"{self.route.source} - {self.route.destination} (departure: {self.departure_time} / arrival: {self.arrival_time})"
+        return (f"{self.route.source} - {self.route.destination} "
+                f"(departure: {self.departure_time} / "
+                f"arrival: {self.arrival_time})")
 
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="orders"
+    )
 
     class Meta:
         ordering = ["-created_at"]
@@ -110,8 +141,16 @@ class Order(models.Model):
 class Ticket(models.Model):
     row = models.IntegerField()
     seat = models.IntegerField()
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE, related_name="tickets")
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
+    flight = models.ForeignKey(
+        Flight,
+        on_delete=models.CASCADE,
+        related_name="tickets"
+    )
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name="tickets"
+    )
 
     class Meta:
         unique_together = ("row", "seat", "flight")

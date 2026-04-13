@@ -17,7 +17,6 @@ from airport.models import (
     Order,
     Ticket
 )
-from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
 
 from airport.serializers import (
     AirportSerializer,
@@ -27,9 +26,18 @@ from airport.serializers import (
     AirplaneSerializer,
     FlightSerializer,
     OrderSerializer,
-    TicketSerializer, RouteListSerializer, FlightListSerializer, FlightRetrieveSerializer, RouteRetrieveSerializer,
-    CrewListSerializer, AirplaneListSerializer, TicketListSerializer, TicketRetrieveSerializer, AirplaneImageSerializer,
-    OrderListSerializer, AirplaneRetrieveSerializer
+    TicketSerializer,
+    RouteListSerializer,
+    FlightListSerializer,
+    FlightRetrieveSerializer,
+    RouteRetrieveSerializer,
+    CrewListSerializer,
+    AirplaneListSerializer,
+    TicketListSerializer,
+    TicketRetrieveSerializer,
+    AirplaneImageSerializer,
+    OrderListSerializer,
+    AirplaneRetrieveSerializer
 )
 
 
@@ -57,7 +65,6 @@ class CrewViewSet(viewsets.ModelViewSet):
             return CrewListSerializer
 
         return CrewSerializer
-
 
 
 class RouteViewSet(viewsets.ModelViewSet):
@@ -118,7 +125,6 @@ class AirplaneViewSet(
 
         return queryset
 
-
     @action(
         methods=["POST"],
         detail=True,
@@ -140,7 +146,9 @@ class AirplaneViewSet(
             OpenApiParameter(
                 "airplane_types",
                 type={"type": "array", "items": {"type": "number"}},
-                description="Filter by airplane type id (ex. ?airplane_types=2,3)",
+                description=(
+                        "Filter by airplane type id ex. ?airplane_types=2,3"
+                ),
                 required=False,
                 explode=False,
             ),
@@ -171,12 +179,20 @@ class FlightViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = self.queryset
         if self.action == "list":
-            queryset = queryset.select_related(
-                "route__source",
-                "route__destination",
-                "airplane",
-            ).prefetch_related("crew").annotate(
-                tickets_available=F("airplane__rows") * F("airplane__seats_in_row") - Count("tickets")
+            queryset = (
+                queryset.select_related(
+                    "route__source",
+                    "route__destination",
+                    "airplane",
+                )
+                .prefetch_related("crew")
+                .annotate(
+                    tickets_available=(
+                        F("airplane__rows")
+                        * F("airplane__seats_in_row")
+                        - Count("tickets")
+                    )
+                )
             )
 
         elif self.action == "retrieve":
@@ -218,7 +234,6 @@ class OrderViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
 
     @extend_schema(
         parameters=[

@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+
 from airport.models import (
     Airport,
     AirplaneType,
@@ -11,6 +12,7 @@ from airport.models import (
     Ticket,
 )
 
+
 class TicketInline(admin.TabularInline):
     model = Ticket
     extra = 2
@@ -19,6 +21,7 @@ class TicketInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = (TicketInline, )
+
 
 admin.site.register(Airport)
 admin.site.register(AirplaneType)
