@@ -1,12 +1,13 @@
 from django.contrib.auth import get_user_model
+from django.utils import timezone
+from datetime import timedelta
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 
-
-from airport.models import Airplane, AirplaneType
-from airport.serializers import AirplaneListSerializer, AirplaneRetrieveSerializer
+from airport.models import Airplane, AirplaneType, Airport, Route, Flight, Order, Ticket
+from airport.serializers import AirplaneListSerializer, AirplaneRetrieveSerializer, TicketSerializer
 
 AIRPLANE_URL = reverse("airport:airplane-list")
 
@@ -23,6 +24,25 @@ def sample_airplane(**params) -> Airplane:
     defaults.update(params)
     return Airplane.objects.create(**defaults)
 
+def sample_flight():
+    airplane_type = AirplaneType.objects.create(name="Test Type")
+    airplane = Airplane.objects.create(
+        name="Test Airplane",
+        rows=5,
+        seats_in_row=6,
+        airplane_type=airplane_type
+    )
+    source = Airport.objects.create(name="Source", closest_big_city="City A")
+    destination = Airport.objects.create(name="Dest", closest_big_city="City B")
+    route = Route.objects.create(
+        source=source, destination=destination, distance=100
+    )
+    return Flight.objects.create(
+        route=route,
+        airplane=airplane,
+        departure_time=timezone.now() + timedelta(days=1),
+        arrival_time=timezone.now() + timedelta(days=1, hours=4),
+    )
 
 def detail_url(airplane_id: int):
     return reverse("airport:airplane-detail", args=[airplane_id])
@@ -165,3 +185,36 @@ class AdminAirplanesTests(TestCase):
         response = self.client.delete(url)
 
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
+class TicketSerializerTests(TestCase):
+    def setUp(self) -> None:
+        self.flight = sample_flight()
+
+    def test_ticket_invalid_seat(self):
+        data = {"row": 1, "seat": 99, "flight": self.flight.id}
+        serializer = TicketSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("seat", serializer.errors)
+
+    def test_ticket_invalid_row(self):
+        data = {"row": 99, "seat": 1, "flight": self.flight.id}
+        serializer = TicketSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("row", serializer.errors)
+
+
+    def test_ticket_duplicate_seat(self):
+        user = get_user_model().objects.create_user(
+            email="test@test.com", password="test1234"
+        )
+        order = Order.objects.create(user=user)
+        Ticket.objects.create(flight=self.flight, order=order, row=1, seat=1)
+
+        data = {"row": 1, "seat": 1, "flight": self.flight.id}
+        serializer = TicketSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("seat", serializer.errors)
