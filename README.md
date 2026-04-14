@@ -55,3 +55,21 @@ python manage.py test
 ```
 
 ## Page images
+
+### 🔐 Authentication & Documentation
+
+| Swagger | JWT Authentication | Admin Panel |
+| :---: | :---: | :---: |
+| ![Swagger](screenshots/swagger.png) | ![Token](screenshots/token.png) | ![Admin Panel](screenshots/admin-panel.png) |
+
+### 🎭 Content & Booking
+
+| Flights | Flight Detail | Airplane Filtering | Reservations |
+| :---: | :---: | :---: | :---: |
+| ![Flights](screenshots/flights.png) | ![Flight Detail](screenshots/flight_detail.png) | ![Filtering](screenshots/airplane_filtering.png) | ![Orders](screenshots/orders.png) |
+
+### 📁 Media & Schema
+
+| Image Upload | Database Schema |
+| :---: | :---: |
+| ![Upload](screenshots/upload-image.png) | ![Diagram](screenshots/airport_diagram.webp) |
