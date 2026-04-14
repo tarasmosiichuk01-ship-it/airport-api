@@ -50,6 +50,10 @@ docker-compose up
 - Role-based access control (User/Admin)
 
 ## 🧪 Running Tests
+
+You can run tests using local environment or Docker:
+
+**Local:**
 ```shell
 python manage.py test
 ```
